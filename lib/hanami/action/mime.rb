@@ -158,6 +158,8 @@ module Hanami
             format_to_mime_type(format)
           end
 
+          configuration.restrict_mime_types!(mime_types)
+
           before do
             unless mime_types.find {|mt| accept?(mt) }
               halt 406

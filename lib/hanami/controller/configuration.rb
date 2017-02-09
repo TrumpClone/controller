@@ -413,6 +413,10 @@ module Hanami
                         end
       end
 
+      def restrict_mime_types!(mime_types)
+        @mime_types = self.mime_types & mime_types
+      end
+
       # Set a format as default fallback for all the requests without a strict
       # requirement for the mime type.
       #
