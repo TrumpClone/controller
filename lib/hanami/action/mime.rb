@@ -106,6 +106,8 @@ module Hanami
             format_to_mime_type(format)
           end
 
+          configuration.restrict_mime_types!(mime_types)
+
           before do
             unless mime_types.find {|mt| accept?(mt) }
               halt 406
@@ -207,7 +209,14 @@ module Hanami
       #     end
       #   end
       def content_type
-        @content_type || default_response_type || accepts || default_content_type || DEFAULT_CONTENT_TYPE
+        return @content_type unless @content_type.nil?
+
+        if accept_header?
+          type = content_type_from_accept_header
+          return type if type
+        end
+
+        default_response_type || default_content_type || DEFAULT_CONTENT_TYPE
       end
 
       # Action charset setter, receives new charset value
@@ -427,6 +436,14 @@ module Hanami
         end
       end
 
+      def accept_header?
+        accept != DEFAULT_ACCEPT
+      end
+
+      def content_type_from_accept_header
+        best_q_match(accept, configuration.mime_types)
+      end
+
       private
 
       # @since 0.1.0
@@ -489,7 +506,13 @@ module Hanami
         values = ::Rack::Utils.q_values(q_value_header)
 
         values = values.map do |req_mime, quality|
-          match = available_mimes.find { |am| ::Rack::Mime.match?(am, req_mime) }
+          if req_mime == DEFAULT_ACCEPT
+            # See https://github.com/hanami/controller/issues/167
+            match = default_content_type
+          else
+            match = available_mimes.find { |am| ::Rack::Mime.match?(am, req_mime) }
+          end
+
           next unless match
           [match, quality]
         end.compact
