@@ -261,7 +261,14 @@ module Hanami
       #     end
       #   end
       def content_type
-        @content_type || default_response_type || accepts || default_content_type || DEFAULT_CONTENT_TYPE
+        return @content_type unless @content_type.nil?
+
+        if accept_header?
+          type = content_type_from_accept_header
+          return type if type
+        end
+
+        default_response_type || default_content_type || DEFAULT_CONTENT_TYPE
       end
 
       # Action charset setter, receives new charset value
@@ -479,6 +486,14 @@ module Hanami
         !!::Rack::Utils.q_values(accept).find do |mime, _|
           ::Rack::Mime.match?(mime_type, mime)
         end
+      end
+
+      def accept_header?
+        accept != DEFAULT_ACCEPT
+      end
+
+      def content_type_from_accept_header
+        best_q_match(accept, configuration.mime_types)
       end
 
       private
