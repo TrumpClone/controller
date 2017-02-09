@@ -402,8 +402,15 @@ module Hanami
       def format(hash)
         symbol, mime_type = *Utils::Kernel.Array(hash)
 
-        @formats.merge! Utils::Kernel.String(mime_type) =>
-          Utils::Kernel.Symbol(symbol)
+        @formats[Utils::Kernel.String(mime_type)] = Utils::Kernel.Symbol(symbol)
+        @mime_types = nil
+      end
+
+      def mime_types
+        @mime_types ||= begin
+                          ((@formats.keys - DEFAULT_FORMATS.keys) +
+                          Hanami::Action::Mime::MIME_TYPES.values).freeze
+                        end
       end
 
       # Set a format as default fallback for all the requests without a strict
