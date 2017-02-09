@@ -554,6 +554,7 @@ module Hanami
       # @see https://github.com/hanami/controller/issues/59
       # @see https://github.com/hanami/controller/issues/104
       def best_q_match(q_value_header, available_mimes)
+        binding.pry
         values = ::Rack::Utils.q_values(q_value_header)
         values = values.map do |req_mime, quality|
           if req_mime == DEFAULT_ACCEPT
