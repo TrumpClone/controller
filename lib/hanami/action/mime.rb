@@ -554,25 +554,18 @@ module Hanami
       # @see https://github.com/hanami/controller/issues/59
       # @see https://github.com/hanami/controller/issues/104
       def best_q_match(q_value_header, available_mimes)
-        binding.pry
         values = ::Rack::Utils.q_values(q_value_header)
         values = values.map do |req_mime, quality|
-          binding.pry
           if req_mime == DEFAULT_ACCEPT
             # See https://github.com/hanami/controller/issues/167
-            binding.pry
             match = default_content_type
-
           else
-            binding.pry
             match = available_mimes.find { |am| ::Rack::Mime.match?(am, req_mime) }
           end
-          binding.pry
+
           next unless match
           [match, quality]
         end.compact
-
-        binding.pry
 
         if Hanami::Utils.jruby?
           # See https://github.com/hanami/controller/issues/59
@@ -583,13 +576,9 @@ module Hanami
           values.sort!
         end
 
-        binding.pry
-
         value = values.sort_by do |match, quality|
           (match.split('/'.freeze, 2).count('*'.freeze) * -10) + quality
         end.last
-
-        binding.pry
 
         value.first if value
       end
